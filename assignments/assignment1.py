@@ -40,33 +40,33 @@ def subdivision_loop(mesh):
     # The following implementation considers only the interior cases
     # You should also consider the boundary cases and more iterations in your submission
     """
-    
+
     # prepare geometry for the loop subdivision
-    vertices, faces = mesh.vertices, mesh.faces # [N_vertices, 3] [N_faces, 3]
-    edges, edges_face = faces_to_edges(faces, return_index=True) # [N_edges, 2], [N_edges]
+    vertices, faces = mesh.vertices, mesh.faces  # [N_vertices, 3] [N_faces, 3]
+    edges, edges_face = faces_to_edges(faces, return_index=True)  # [N_edges, 2], [N_edges]
     edges.sort(axis=1)
     unique, inverse = grouping.unique_rows(edges)
-    
+
     # split edges to interior edges and boundary edges
     edge_inter = np.sort(grouping.group_rows(edges, require_count=2), axis=1)
     edge_bound = grouping.group_rows(edges, require_count=1)
-    
+
     # set also the mask for interior edges and boundary edges
     edge_bound_mask = np.zeros(len(edges), dtype=bool)
     edge_bound_mask[edge_bound] = True
     edge_bound_mask = edge_bound_mask[unique]
     edge_inter_mask = ~edge_bound_mask
-    
+
     ###########
     # Step 1: #
     ###########
     # Calculate odd vertices to the middle of each edge.
-    odd = vertices[edges[unique]].mean(axis=1) # [N_oddvertices, 3]
-    
+    odd = vertices[edges[unique]].mean(axis=1)  # [N_oddvertices, 3]
+
     # connect the odd vertices with even vertices
     # however, the odd vertices need further updates over it's position
     # we therefore complete this step later afterwards.
-    
+
     ###########
     # Step 2: #
     ###########
@@ -77,7 +77,7 @@ def subdivision_loop(mesh):
     # locate the endpoints for each edge
     e_v0 = vertices[e][:, 0]
     e_v1 = vertices[e][:, 1]
-    
+
     # v2 and v3 are at the farmost position of the two triangle
     # locate the two triangle face
     edge_pair = np.zeros(len(edges)).astype(int)
@@ -93,11 +93,11 @@ def subdivision_loop(mesh):
     e_v3_idx = e_f1[~(e_f1[:, :, None] == e[:, None, :]).any(-1)]
     e_v2 = vertices[e_v2_idx]
     e_v3 = vertices[e_v3_idx]
-    
+
     # update the odd vertices based the v0, v1, v2, v3, based the following:
     # 3 / 8 * (e_v0 + e_v1) + 1 / 8 * (e_v2 + e_v3)
     odd[edge_inter_mask] = 0.375 * e_v0 + 0.375 * e_v1 + e_v2 / 8.0 + e_v3 / 8.0
-    
+
     ###########
     # Step 3: #
     ###########
@@ -109,19 +109,19 @@ def subdivision_loop(mesh):
     vertices_ = np.vstack([vertices, [0.0, 0.0, 0.0]])
     # number of neighbors
     k = (neighbors + 1).astype(bool).sum(axis=1)
-    
+
     # calculate even vertices for the interior case
     beta = (40.0 - (2.0 * np.cos(2 * np.pi / k) + 3) ** 2) / (64 * k)
     even = (
-        beta[:, None] * vertices_[neighbors].sum(1)
-        + (1 - k[:, None] * beta[:, None]) * vertices
+            beta[:, None] * vertices_[neighbors].sum(1)
+            + (1 - k[:, None] * beta[:, None]) * vertices
     )
-    
+
     ############
     # Step 1+: #
     ############
     # complete the subdivision by updating the vertex list and face list
-    
+
     # the new faces with odd vertices
     odd_idx = inverse.reshape((-1, 3)) + len(vertices)
     new_faces = np.column_stack(
@@ -139,12 +139,13 @@ def subdivision_loop(mesh):
             odd_idx[:, 1],
             odd_idx[:, 2],
         ]
-    ).reshape((-1, 3)) # [N_face*4, 3]
+    ).reshape((-1, 3))  # [N_face*4, 3]
 
     # stack the new even vertices and odd vertices
-    new_vertices = np.vstack((even, odd)) # [N_vertex+N_edge, 3]
-    
+    new_vertices = np.vstack((even, odd))  # [N_vertex+N_edge, 3]
+
     return trimesh.Trimesh(new_vertices, new_faces)
+
 
 def simplify_quadric_error(mesh, face_count=1):
     """
@@ -155,28 +156,29 @@ def simplify_quadric_error(mesh, face_count=1):
     """
     return mesh
 
+
 if __name__ == '__main__':
     # Load mesh and print information
     # mesh = trimesh.load_mesh('assets/cube.obj')
     mesh = trimesh.creation.box(extents=[1, 1, 1])
     print(f'Mesh Info: {mesh}')
-    
+
     # apply loop subdivision over the loaded mesh
     # mesh_subdivided = mesh.subdivide_loop(iterations=1)
-    
+
     # TODO: implement your own loop subdivision here
     mesh_subdivided = subdivision_loop(mesh)
-    
+
     # print the new mesh information and save the mesh
     print(f'Subdivided Mesh Info: {mesh_subdivided}')
     mesh_subdivided.export('assets/assignment1/cube_subdivided.obj')
-    
+
     # quadratic error mesh decimation
     mesh_decimated = mesh.simplify_quadric_decimation(4)
-    
+
     # TODO: implement your own quadratic error mesh decimation here
     # mesh_decimated = simplify_quadric_error(mesh, face_count=1)
-    
+
     # print the new mesh information and save the mesh
     print(f'Decimated Mesh Info: {mesh_decimated}')
     mesh_decimated.export('assets/assignment1/cube_decimated.obj')
