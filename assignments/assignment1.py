@@ -1,11 +1,111 @@
 import trimesh
-from trimesh import graph, grouping
-from trimesh.geometry import faces_to_edges
 import numpy as np
-from itertools import zip_longest
+from functools import reduce
 
 
-def subdivision_loop(mesh):
+def _calculate_odd_vertex(v_idx_0, v_idx_1, faces, vertices):
+    n_faces = 0
+    adjacent_sum = np.zeros_like(vertices[0])
+
+    for face in faces:
+        if v_idx_0 in face and v_idx_1 in face:
+            n_faces += 1
+            adjacent_sum = reduce(
+                lambda acc, v_idx: acc + vertices[v_idx],
+                face,
+                adjacent_sum
+            )
+
+    if n_faces == 2:
+        adjacent_sum += vertices[v_idx_0] + vertices[v_idx_1]
+        return adjacent_sum / 8.
+    else:
+        return (vertices[v_idx_0] + vertices[v_idx_1]) / 2.
+
+
+def _calculate_odd_vertices(vertices, faces):
+    odd_vertices = dict()
+
+    for face in faces:
+        for i in range(len(face)):
+            edge = (face[i], face[(i + 1) % len(face)])
+            if edge not in odd_vertices:
+                odd_vertices[edge] = _calculate_odd_vertex(*edge, faces, vertices)
+                odd_vertices[edge[::-1]] = odd_vertices[edge]
+
+    return odd_vertices
+
+
+def _calculate_even_vertices(vertices, faces):
+    even_vertices = dict()
+
+    for idx, vertex in enumerate(vertices):
+        adjacent_vertices = list(set(reduce(
+            lambda acc, face: acc + [v for v in face if v != idx],
+            filter(lambda face: idx in face, faces),
+            list()
+        )))
+
+        if 0 <= len(adjacent_vertices) < 2:
+            even_vertex = vertex
+        else:
+            sum_adjacent = reduce(
+                lambda acc, v: acc + vertices[v],
+                adjacent_vertices,
+                np.zeros_like(vertex)
+            )
+            if len(adjacent_vertices) == 2:
+                even_vertex = (1. / 8.) * sum_adjacent + (3. / 4.) * vertex
+            else:
+                k = len(adjacent_vertices)
+                beta = (40. - (3 + 2 * np.cos(2 * np.pi / k)) ** 2) / (k * 64.)
+                even_vertex = vertex * (1 - k * beta) + beta * sum_adjacent
+
+        even_vertices[idx] = even_vertex
+
+    return even_vertices
+
+
+def _compose_new_faces(odd_vertices, even_vertices, faces):
+    print(odd_vertices)
+    print()
+    print(even_vertices)
+    new_vertices = list(map(
+        lambda vertex: (vertex[0], vertex[1], vertex[2]),
+        list(odd_vertices.values()) + list(even_vertices.values())
+    ))
+    print()
+    print(new_vertices)
+    new_faces = list()
+
+    for face in faces:
+        new_faces.extend([
+            [
+                new_vertices.index(tuple(even_vertices[face[0]])),
+                new_vertices.index(tuple(odd_vertices[(face[0], face[1])])),
+                new_vertices.index(tuple(odd_vertices[(face[0], face[2])])),
+            ],
+            [
+                new_vertices.index(tuple(even_vertices[face[1]])),
+                new_vertices.index(tuple(odd_vertices[(face[1], face[0])])),
+                new_vertices.index(tuple(odd_vertices[(face[1], face[2])])),
+            ],
+            [
+                new_vertices.index(tuple(even_vertices[face[2]])),
+                new_vertices.index(tuple(odd_vertices[(face[2], face[0])])),
+                new_vertices.index(tuple(odd_vertices[(face[2], face[1])])),
+            ],
+            [
+                new_vertices.index(tuple(odd_vertices[(face[0], face[1])])),
+                new_vertices.index(tuple(odd_vertices[(face[1], face[2])])),
+                new_vertices.index(tuple(odd_vertices[(face[2], face[1])])),
+            ],
+        ])
+
+    return new_vertices, new_faces
+
+
+def subdivision_loop(mesh, iterations=1):
     """
     Apply Loop subdivision to the input mesh for the specified number of iterations.
     :param mesh: input mesh
@@ -41,110 +141,16 @@ def subdivision_loop(mesh):
     # You should also consider the boundary cases and more iterations in your submission
     """
 
-    # prepare geometry for the loop subdivision
-    vertices, faces = mesh.vertices, mesh.faces  # [N_vertices, 3] [N_faces, 3]
-    edges, edges_face = faces_to_edges(faces, return_index=True)  # [N_edges, 2], [N_edges]
-    edges.sort(axis=1)
-    unique, inverse = grouping.unique_rows(edges)
+    # reference: https://www.cs.cmu.edu/afs/cs/academic/class/15462-s14/www/lec_slides/Subdivision.pdf
 
-    # split edges to interior edges and boundary edges
-    edge_inter = np.sort(grouping.group_rows(edges, require_count=2), axis=1)
-    edge_bound = grouping.group_rows(edges, require_count=1)
+    vertices, faces = mesh.vertices, mesh.faces
 
-    # set also the mask for interior edges and boundary edges
-    edge_bound_mask = np.zeros(len(edges), dtype=bool)
-    edge_bound_mask[edge_bound] = True
-    edge_bound_mask = edge_bound_mask[unique]
-    edge_inter_mask = ~edge_bound_mask
+    for _ in range(iterations):
+        odd_vertices = _calculate_odd_vertices(vertices, faces)
+        even_vertices = _calculate_even_vertices(vertices, faces)
+        vertices, faces = _compose_new_faces(odd_vertices, even_vertices, faces)
 
-    ###########
-    # Step 1: #
-    ###########
-    # Calculate odd vertices to the middle of each edge.
-    odd = vertices[edges[unique]].mean(axis=1)  # [N_oddvertices, 3]
-
-    # connect the odd vertices with even vertices
-    # however, the odd vertices need further updates over it's position
-    # we therefore complete this step later afterwards.
-
-    ###########
-    # Step 2: #
-    ###########
-    # find v0, v1, v2, v3 and each odd vertex
-    # v0 and v1 are at the end of the edge where the generated odd vertex on
-    # locate the edge first
-    e = edges[unique[edge_inter_mask]]
-    # locate the endpoints for each edge
-    e_v0 = vertices[e][:, 0]
-    e_v1 = vertices[e][:, 1]
-
-    # v2 and v3 are at the farmost position of the two triangle
-    # locate the two triangle face
-    edge_pair = np.zeros(len(edges)).astype(int)
-    edge_pair[edge_inter[:, 0]] = edge_inter[:, 1]
-    edge_pair[edge_inter[:, 1]] = edge_inter[:, 0]
-    opposite_face1 = edges_face[unique]
-    opposite_face2 = edges_face[edge_pair[unique]]
-    # locate the corresponding edge
-    e_f0 = faces[opposite_face1[edge_inter_mask]]
-    e_f1 = faces[opposite_face2[edge_inter_mask]]
-    # locate the vertex index and vertex location
-    e_v2_idx = e_f0[~(e_f0[:, :, None] == e[:, None, :]).any(-1)]
-    e_v3_idx = e_f1[~(e_f1[:, :, None] == e[:, None, :]).any(-1)]
-    e_v2 = vertices[e_v2_idx]
-    e_v3 = vertices[e_v3_idx]
-
-    # update the odd vertices based the v0, v1, v2, v3, based the following:
-    # 3 / 8 * (e_v0 + e_v1) + 1 / 8 * (e_v2 + e_v3)
-    odd[edge_inter_mask] = 0.375 * e_v0 + 0.375 * e_v1 + e_v2 / 8.0 + e_v3 / 8.0
-
-    ###########
-    # Step 3: #
-    ###########
-    # find vertex neightbors for even vertices and update accordingly
-    neighbors = graph.neighbors(edges=edges[unique], max_index=len(vertices))
-    # convert list type of array into a fixed-shaped numpy array (set -1 to empties)
-    neighbors = np.array(list(zip_longest(*neighbors, fillvalue=-1))).T
-    # if the neighbor has -1 index, its point is (0, 0, 0), so that it is not included in the summation of neighbors when calculating the even
-    vertices_ = np.vstack([vertices, [0.0, 0.0, 0.0]])
-    # number of neighbors
-    k = (neighbors + 1).astype(bool).sum(axis=1)
-
-    # calculate even vertices for the interior case
-    beta = (40.0 - (2.0 * np.cos(2 * np.pi / k) + 3) ** 2) / (64 * k)
-    even = (
-            beta[:, None] * vertices_[neighbors].sum(1)
-            + (1 - k[:, None] * beta[:, None]) * vertices
-    )
-
-    ############
-    # Step 1+: #
-    ############
-    # complete the subdivision by updating the vertex list and face list
-
-    # the new faces with odd vertices
-    odd_idx = inverse.reshape((-1, 3)) + len(vertices)
-    new_faces = np.column_stack(
-        [
-            faces[:, 0],
-            odd_idx[:, 0],
-            odd_idx[:, 2],
-            odd_idx[:, 0],
-            faces[:, 1],
-            odd_idx[:, 1],
-            odd_idx[:, 2],
-            odd_idx[:, 1],
-            faces[:, 2],
-            odd_idx[:, 0],
-            odd_idx[:, 1],
-            odd_idx[:, 2],
-        ]
-    ).reshape((-1, 3))  # [N_face*4, 3]
-
-    # stack the new even vertices and odd vertices
-    new_vertices = np.vstack((even, odd))  # [N_vertex+N_edge, 3]
-
-    return trimesh.Trimesh(new_vertices, new_faces)
+    return trimesh.Trimesh(vertices, faces)
 
 
 def simplify_quadric_error(mesh, face_count=1):
@@ -159,26 +165,24 @@ def simplify_quadric_error(mesh, face_count=1):
 
 if __name__ == '__main__':
     # Load mesh and print information
-    # mesh = trimesh.load_mesh('assets/cube.obj')
-    mesh = trimesh.creation.box(extents=[1, 1, 1])
-    print(f'Mesh Info: {mesh}')
+    # object_mesh = trimesh.load_mesh('assets/cube.obj')
+    object_mesh = trimesh.Trimesh(vertices=[[0, 0, 0], [1, 0, 0], [0.5, 1, 0], [0.5, -1, 0]],
+                       faces=[[0, 1, 2], [0, 1, 3]])
+    print(f'Mesh Info: {object_mesh}')
 
-    # apply loop subdivision over the loaded mesh
-    # mesh_subdivided = mesh.subdivide_loop(iterations=1)
-
-    # TODO: implement your own loop subdivision here
-    mesh_subdivided = subdivision_loop(mesh)
+    # implement your own loop subdivision here
+    mesh_subdivided = subdivision_loop(object_mesh)
 
     # print the new mesh information and save the mesh
     print(f'Subdivided Mesh Info: {mesh_subdivided}')
     mesh_subdivided.export('assets/assignment1/cube_subdivided.obj')
 
     # quadratic error mesh decimation
-    mesh_decimated = mesh.simplify_quadric_decimation(4)
+    # mesh_decimated = object_mesh.simplify_quadric_decimation(4)
 
     # TODO: implement your own quadratic error mesh decimation here
     # mesh_decimated = simplify_quadric_error(mesh, face_count=1)
 
     # print the new mesh information and save the mesh
-    print(f'Decimated Mesh Info: {mesh_decimated}')
-    mesh_decimated.export('assets/assignment1/cube_decimated.obj')
+    # print(f'Decimated Mesh Info: {mesh_decimated}')
+    # mesh_decimated.export('assets/assignment1/cube_decimated.obj')
