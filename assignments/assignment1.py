@@ -143,14 +143,16 @@ def subdivision_loop(mesh, iterations=1):
 
     # reference: https://www.cs.cmu.edu/afs/cs/academic/class/15462-s14/www/lec_slides/Subdivision.pdf
 
-    vertices, faces = mesh.vertices, mesh.faces
+    if iterations < 1:
+        return mesh
 
     for _ in range(iterations):
+        vertices, faces = mesh.vertices, mesh.faces
         odd_vertices = _calculate_odd_vertices(vertices, faces)
         even_vertices = _calculate_even_vertices(vertices, faces)
-        vertices, faces = _compose_new_faces(odd_vertices, even_vertices, faces)
+        mesh = trimesh.Trimesh(*_compose_new_faces(odd_vertices, even_vertices, faces))
 
-    return trimesh.Trimesh(vertices, faces)
+    return mesh
 
 
 def simplify_quadric_error(mesh, face_count=1):
@@ -169,8 +171,15 @@ if __name__ == '__main__':
     object_mesh = trimesh.creation.box(extents=[0.5, 0.5, 0.5])
     print(f'Mesh Info: {object_mesh}')
 
+    # loop subdivision from trimesh
+    # mesh_subdivided = trimesh.Trimesh(*trimesh.remesh.subdivide_loop(
+    #     object_mesh.vertices,
+    #     object_mesh.faces,
+    #     1
+    # ))
+
     # implement your own loop subdivision here
-    mesh_subdivided = subdivision_loop(object_mesh)
+    mesh_subdivided = subdivision_loop(object_mesh, iterations=1)
 
     # print the new mesh information and save the mesh
     print(f'Subdivided Mesh Info: {mesh_subdivided}')
