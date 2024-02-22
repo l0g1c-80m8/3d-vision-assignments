@@ -67,38 +67,38 @@ def _calculate_even_vertices(vertices, faces):
 
 
 def _compose_new_faces(odd_vertices, even_vertices, faces):
-    print(odd_vertices)
-    print()
-    print(even_vertices)
-    new_vertices = list(map(
+    new_vertices = list(set(map(
         lambda vertex: (vertex[0], vertex[1], vertex[2]),
         list(odd_vertices.values()) + list(even_vertices.values())
-    ))
-    print()
-    print(new_vertices)
+    )))
     new_faces = list()
+
+    new_vertices_dict = dict(map(
+        lambda idx_vertex: (idx_vertex[1], idx_vertex[0]),
+        enumerate(new_vertices)
+    ))
 
     for face in faces:
         new_faces.extend([
             [
-                new_vertices.index(tuple(even_vertices[face[0]])),
-                new_vertices.index(tuple(odd_vertices[(face[0], face[1])])),
-                new_vertices.index(tuple(odd_vertices[(face[0], face[2])])),
+                new_vertices_dict[tuple(even_vertices[face[0]])],
+                new_vertices_dict[tuple(odd_vertices[(face[0], face[1])])],
+                new_vertices_dict[tuple(odd_vertices[(face[2], face[0])])],
             ],
             [
-                new_vertices.index(tuple(even_vertices[face[1]])),
-                new_vertices.index(tuple(odd_vertices[(face[1], face[0])])),
-                new_vertices.index(tuple(odd_vertices[(face[1], face[2])])),
+                new_vertices_dict[tuple(even_vertices[face[1]])],
+                new_vertices_dict[tuple(odd_vertices[(face[0], face[1])])],
+                new_vertices_dict[tuple(odd_vertices[(face[1], face[2])])],
             ],
             [
-                new_vertices.index(tuple(even_vertices[face[2]])),
-                new_vertices.index(tuple(odd_vertices[(face[2], face[0])])),
-                new_vertices.index(tuple(odd_vertices[(face[2], face[1])])),
+                new_vertices_dict[tuple(even_vertices[face[2]])],
+                new_vertices_dict[tuple(odd_vertices[(face[1], face[2])])],
+                new_vertices_dict[tuple(odd_vertices[(face[2], face[0])])],
             ],
             [
-                new_vertices.index(tuple(odd_vertices[(face[0], face[1])])),
-                new_vertices.index(tuple(odd_vertices[(face[1], face[2])])),
-                new_vertices.index(tuple(odd_vertices[(face[2], face[1])])),
+                new_vertices_dict[tuple(odd_vertices[(face[0], face[1])])],
+                new_vertices_dict[tuple(odd_vertices[(face[1], face[2])])],
+                new_vertices_dict[tuple(odd_vertices[(face[2], face[0])])],
             ],
         ])
 
