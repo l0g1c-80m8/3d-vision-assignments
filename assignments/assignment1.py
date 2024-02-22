@@ -148,7 +148,6 @@ def subdivision_loop(mesh, iterations=1):
     for _ in range(iterations):
         odd_vertices = _calculate_odd_vertices(vertices, faces)
         even_vertices = _calculate_even_vertices(vertices, faces)
-        print(len(odd_vertices), len(even_vertices))
         vertices, faces = _compose_new_faces(odd_vertices, even_vertices, faces)
 
     return trimesh.Trimesh(vertices, faces)
