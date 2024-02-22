@@ -58,7 +58,7 @@ def _calculate_even_vertices(vertices, faces):
                 even_vertex = (1. / 8.) * sum_adjacent + (3. / 4.) * vertex
             else:
                 k = len(adjacent_vertices)
-                beta = (40. - (3 + 2 * np.cos(2 * np.pi / k)) ** 2) / (k * 64.)
+                beta = (5. / 8. - (3. / 8. + 1. / 4. * np.cos(2 * np.pi / k)) ** 2) / k
                 even_vertex = vertex * (1 - k * beta) + beta * sum_adjacent
 
         even_vertices[idx] = even_vertex
