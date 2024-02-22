@@ -188,9 +188,9 @@ if __name__ == '__main__':
     # quadratic error mesh decimation
     # mesh_decimated = object_mesh.simplify_quadric_decimation(4)
 
-    # TODO: implement your own quadratic error mesh decimation here
-    # mesh_decimated = simplify_quadric_error(mesh, face_count=1)
+    # implement your own quadratic error mesh decimation here
+    mesh_decimated = simplify_quadric_error(object_mesh, face_count=1)
 
     # print the new mesh information and save the mesh
-    # print(f'Decimated Mesh Info: {mesh_decimated}')
-    # mesh_decimated.export('assets/assignment1/cube_decimated.obj')
+    print(f'Decimated Mesh Info: {mesh_decimated}')
+    mesh_decimated.export('assets/assignment1/cube_decimated.obj')
