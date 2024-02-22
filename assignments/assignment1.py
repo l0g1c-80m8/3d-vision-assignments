@@ -165,9 +165,7 @@ def simplify_quadric_error(mesh, face_count=1):
 
 if __name__ == '__main__':
     # Load mesh and print information
-    # object_mesh = trimesh.load_mesh('assets/cube.obj')
-    object_mesh = trimesh.Trimesh(vertices=[[0, 0, 0], [1, 0, 0], [0.5, 1, 0], [0.5, -1, 0]],
-                       faces=[[0, 1, 2], [0, 1, 3]])
+    object_mesh = trimesh.load_mesh('assets/cube.obj')
     print(f'Mesh Info: {object_mesh}')
 
     # implement your own loop subdivision here
