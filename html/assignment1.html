@@ -43,7 +43,7 @@
 			<p>
 				Please refer to the code comments for more details about the implementation of the individual steps.
 				<br>
-				For my particular implementation, I use dictionaries extensively. I use dictionaries keyed by the edges (a tuple of vertex indices) to the edge to the odd vertex that was generated using it. I use a dictionary to map the original vertices in the mesh that are used to generate the even vertices. I use a dictionary to index the newly generated vertices to an index for fast lookup when creating new faces.
+				For my particular implementation, I use dictionaries extensively. I use dictionaries keyed by the edges (a tuple of vertex indices) to map the edges to the odd vertices that were generated using it. I use a dictionary to map the original vertices in the mesh that are used to generate the even vertices. I use a dictionary to index the newly generated vertices to an index for fast lookup when creating new faces.
 				Most of my processing is done by iterating over faces and sometimes vertices.
 				<br>
 				My implementation takes kess than a minute to run for less than three iterations and about 4 minutes on my computer to run for 5 iterations.
@@ -68,6 +68,11 @@
 			</ol>
 			<p>
 				Please refer to the code comments for more details about the implementation of the individual steps.
+				<br>
+				Most of my processing is done by iterating over faces and sometimes vertices.
+				Here also, I use dictionaries extensively. I use dictionaries keyed by the vertices (index of vertex in original mesh) and edges (a tuple of vertex indices) to store the quardric matrices. I loop over the edge quadrics dictionary to find the minimum cost edge to collapse. For collapsing the edges, I essentially create a new list of vertices using the old list and create new faces using the new vertex indices. I use a dictionary here as well to accelerate lookup of indices fo vertices.
+				<br>
+				My implementation takes kess than a minute to run for less than three iterations and about 4 minutes on my computer to run for 5 iterations.
 			</p>
 			<h4>Quadratic Mesh Decimation with face_count = 2</h4>
 			<div id="container4"></div>
