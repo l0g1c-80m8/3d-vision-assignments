@@ -114,11 +114,11 @@ const render = (containerId, asset, camera_z=0.7) => {
 render('container0', '../assets/cube.obj', 4);
 
 // loop subdivision:
-render('container1', '../assets/assignment1/cube_subdivided_iterations_1.obj');
-render('container2', '../assets/assignment1/cube_subdivided_iterations_3.obj');
-render('container3', '../assets/assignment1/cube_subdivided_iterations_5.obj');
+render('container1', '../assets/assignment1/cube_subdivided_iterations_1.obj', 0.7);
+render('container2', '../assets/assignment1/cube_subdivided_iterations_3.obj', 0.7);
+render('container3', '../assets/assignment1/cube_subdivided_iterations_5.obj', 0.7);
 
 // quadratic error decimation:
-render('container4', '../assets/assignment1/cube_decimated_faces_2.obj');
-render('container5', '../assets/assignment1/cube_decimated_faces_4.obj');
-render('container6', '../assets/assignment1/cube_decimated_faces_10.obj');
+render('container4', '../assets/assignment1/cube_decimated_faces_2.obj', 0.7);
+render('container5', '../assets/assignment1/cube_decimated_faces_4.obj', 0.7);
+render('container6', '../assets/assignment1/cube_decimated_faces_10.obj', 0.9);
