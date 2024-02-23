@@ -30,10 +30,34 @@
 			<b>Grading: </b>The grading is based on the correctness of your implementation. You are encouraged to use the visualization tool to debug your implementation. You can also use the visualization tool to test your implementation on other 3D models. You can find an example of 3D model in the "./assets" folder.</p>
 		</p>
 		<h2>Loop Subdivision</h2>
-		<p>You should visualize your results in the following window with your customization.</p>
+		<h3>Method Overview:</h3>
+		<p>
+			The Loop subdivision algorithm consists of the following steps:
+		</p>
+		<ol>
+			<li><strong>Get Vertices and Faces:</strong> Extract vertices and faces from the mesh.</li>
+			<li><strong>Generate Odd Vertices:</strong> Calculate odd vertices from the edges.</li>
+			<li><strong>Generate Even Vertices:</strong> Compute even vertices from the original vertices.</li>
+			<li><strong>Create New Mesh:</strong> Compose a new mesh using the calculated odd and even vertices along with the original faces.</li>
+		</ol>
+		<p>
+			Please refer to the code comments for more details about the implementation of the individual steps.
+		</p>
+
         <div id="container1"></div>
 		<h2>Quadric Error Mesh Decimation</h2>
-		<p>You should create a similar second visualizer and display your results accordingly.</p>
+		<h3>Method Overview:</h3>
+		<p>
+			Quadratic Error involves a three-step process:
+		</p>
+		<ol>
+			<li><strong>Quadric Matrix Calculation:</strong> Compute quadric matrices for each vertex and edge.</li>
+			<li><strong>Cost Minimization:</strong> Identify the edge with the lowest cost (least error) and determine the corresponding new vertex.</li>
+			<li><strong>Edge Collapse and Recalculation:</strong> Collapse the identified edge to the new vertex and update the vertices and faces accordingly.</li>
+		</ol>
+		<p>
+			Please refer to the code comments for more details about the implementation of the individual steps.
+		</p>
         <div id="container2"></div>
 		<script type="module" src="../js/assignment1.js"></script>
 	</body>
