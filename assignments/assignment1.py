@@ -17,13 +17,13 @@ def _calculate_odd_vertex(v_idx_0, v_idx_1, faces, vertices):
                 lambda acc, v_idx: acc + vertices[v_idx],
                 face,
                 adjacent_sum
-            )
+            )  # get axes-wise sum of all vertices with both vertices in the face
 
-    if n_faces == 2:
-        adjacent_sum += vertices[v_idx_0] + vertices[v_idx_1]
-        return adjacent_sum / 8.
-    else:
-        return (vertices[v_idx_0] + vertices[v_idx_1]) / 2.
+    if n_faces == 2:  # edge is the interior
+        adjacent_sum += vertices[v_idx_0] + vertices[v_idx_1]  # add the vertices t0 the axes-wise sum once more
+        return adjacent_sum / 8.  # at this point all vertices are in the correct proportion, simply divide by 8
+    else:  # edge is on the boundary
+        return (vertices[v_idx_0] + vertices[v_idx_1]) / 2.  # simply return the center of the edge
 
 
 def _calculate_odd_vertices(vertices, faces):
@@ -31,10 +31,10 @@ def _calculate_odd_vertices(vertices, faces):
 
     for face in faces:
         for i in range(len(face)):
-            edge = (face[i], face[(i + 1) % len(face)])
+            edge = (face[i], face[(i + 1) % len(face)])  # get all edges from current face
             if edge not in odd_vertices:
-                odd_vertices[edge] = _calculate_odd_vertex(*edge, faces, vertices)
-                odd_vertices[edge[::-1]] = odd_vertices[edge]
+                odd_vertices[edge] = _calculate_odd_vertex(*edge, faces, vertices)  # new vertex for this edge
+                odd_vertices[edge[::-1]] = odd_vertices[edge]  # add a duplicate (e1, e0) entry for every (e0, e1) edge
 
     return odd_vertices
 
@@ -47,7 +47,7 @@ def _calculate_even_vertices(vertices, faces):
             lambda acc, face: acc + [v for v in face if v != idx],
             filter(lambda face: idx in face, faces),
             list()
-        )))
+        )))  # get a list of all vertices adjacent to the current vertex
 
         if 0 <= len(adjacent_vertices) < 2:
             even_vertex = vertex
@@ -56,15 +56,15 @@ def _calculate_even_vertices(vertices, faces):
                 lambda acc, v: acc + vertices[v],
                 adjacent_vertices,
                 np.zeros_like(vertex)
-            )
-            if len(adjacent_vertices) == 2:
-                even_vertex = (1. / 8.) * sum_adjacent + (3. / 4.) * vertex
-            else:
+            )  # sum the adjacent vertices axis-wise
+            if len(adjacent_vertices) == 2:  # interior edge
+                even_vertex = (1. / 8.) * sum_adjacent + (3. / 4.) * vertex  # use the formula on slide 60
+            else:  # boundary edge
                 k = len(adjacent_vertices)
-                beta = (5. / 8. - (3. / 8. + 1. / 4. * np.cos(2 * np.pi / k)) ** 2) / k
+                beta = (5. / 8. - (3. / 8. + 1. / 4. * np.cos(2 * np.pi / k)) ** 2) / k  # use the formula on slide 60
                 even_vertex = vertex * (1 - k * beta) + beta * sum_adjacent
 
-        even_vertices[idx] = even_vertex
+        even_vertices[idx] = even_vertex  # add an entry for the new even vertex corresponding to the old vertex
 
     return even_vertices
 
@@ -73,32 +73,32 @@ def _compose_new_faces(odd_vertices, even_vertices, faces):
     new_vertices = list(set(map(
         lambda vertex: (vertex[0], vertex[1], vertex[2]),
         list(odd_vertices.values()) + list(even_vertices.values())
-    )))
+    )))  # combine the bew odd and even vertices
     new_faces = list()
 
     new_vertices_dict = dict(map(
         lambda idx_vertex: (idx_vertex[1], idx_vertex[0]),
         enumerate(new_vertices)
-    ))
+    ))  # create a dictionary form the combined list for fast lookup
 
     for face in faces:
-        new_faces.extend([
-            [
+        new_faces.extend([  # for every face, add the four new faces
+            [  # face 1 with one even vertex and two odd vertices
                 new_vertices_dict[tuple(even_vertices[face[0]])],
                 new_vertices_dict[tuple(odd_vertices[(face[0], face[1])])],
                 new_vertices_dict[tuple(odd_vertices[(face[2], face[0])])],
             ],
-            [
+            [  # face 2 with one even vertex and two odd vertices
                 new_vertices_dict[tuple(even_vertices[face[1]])],
                 new_vertices_dict[tuple(odd_vertices[(face[0], face[1])])],
                 new_vertices_dict[tuple(odd_vertices[(face[1], face[2])])],
             ],
-            [
+            [  # face 3 with one even vertex and two odd vertices
                 new_vertices_dict[tuple(even_vertices[face[2]])],
                 new_vertices_dict[tuple(odd_vertices[(face[1], face[2])])],
                 new_vertices_dict[tuple(odd_vertices[(face[2], face[0])])],
             ],
-            [
+            [  # interior face (4) with all odd vertices
                 new_vertices_dict[tuple(odd_vertices[(face[0], face[1])])],
                 new_vertices_dict[tuple(odd_vertices[(face[1], face[2])])],
                 new_vertices_dict[tuple(odd_vertices[(face[2], face[0])])],
@@ -150,9 +150,13 @@ def subdivision_loop(mesh, iterations=1):
         return mesh
 
     for _ in range(iterations):
+        # step 1: get vertices and faces from the mesh
         vertices, faces = mesh.vertices, mesh.faces
+        # step 2: generate odd vertices from the edges
         odd_vertices = _calculate_odd_vertices(vertices, faces)
+        # step 3: generate even vertices from the original vertices
         even_vertices = _calculate_even_vertices(vertices, faces)
+        # step 4: create a new mesh
         mesh = trimesh.Trimesh(*_compose_new_faces(odd_vertices, even_vertices, faces))
 
     return mesh
