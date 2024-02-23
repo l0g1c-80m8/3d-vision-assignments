@@ -308,7 +308,7 @@ if __name__ == '__main__':
     # mesh_decimated = object_mesh.simplify_quadric_decimation(4)
 
     # PART B) IMPLEMENTATION - implement your own quadratic error mesh decimation here
-    mesh_decimated = simplify_quadratic_error(object_mesh, face_count=4)  # 2, 4, 6, 8, 10
+    mesh_decimated = simplify_quadratic_error(object_mesh, face_count=4)  # 2, 4, 10
 
     # print the new mesh information and save the mesh
     print(f'Decimated Mesh Info: {mesh_decimated}')
