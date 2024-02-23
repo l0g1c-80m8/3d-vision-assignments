@@ -5,6 +5,7 @@ from collections import defaultdict
 from functools import reduce
 
 
+# [START]: LOOP SUBDIVISION IMPLEMENTATION
 def _calculate_odd_vertex(v_idx_0, v_idx_1, faces, vertices):
     n_faces = 0
     adjacent_sum = np.zeros_like(vertices[0])
@@ -155,8 +156,10 @@ def subdivision_loop(mesh, iterations=1):
         mesh = trimesh.Trimesh(*_compose_new_faces(odd_vertices, even_vertices, faces))
 
     return mesh
+# [END]: LOOP SUBDIVISION IMPLEMENTATION
 
 
+# [START]: QUADRATIC ERROR DECIMATION IMPLEMENTATION
 def _get_vertex_quadrics(vertices, faces):
     vertex_quadrics = defaultdict(lambda: np.zeros((4, 4)))
 
@@ -266,6 +269,7 @@ def simplify_quadratic_error(mesh, face_count=1):
         vertices, faces = _collapse_edge(vertices, faces, min_edge, min_pt)
 
     return trimesh.Trimesh(vertices, faces)
+# [END]: QUADRATIC ERROR DECIMATION IMPLEMENTATION
 
 
 if __name__ == '__main__':
