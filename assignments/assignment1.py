@@ -298,7 +298,7 @@ if __name__ == '__main__':
     # mesh_subdivided = trimesh.Trimesh(*trimesh.remesh.subdivide_loop(object_mesh.vertices, object_mesh.faces, 1))
 
     # PART A) IMPLEMENTATION - implement your own loop subdivision here
-    mesh_subdivided = subdivision_loop(object_mesh, iterations=7)  # 1, 3, 5
+    mesh_subdivided = subdivision_loop(object_mesh, iterations=1)  # 1, 3, 5
 
     # print the new mesh information and save the mesh
     print(f'Subdivided Mesh Info: {mesh_subdivided}')
