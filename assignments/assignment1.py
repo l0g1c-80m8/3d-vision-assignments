@@ -274,24 +274,24 @@ if __name__ == '__main__':
     object_mesh = trimesh.creation.box(extents=[0.5, 0.5, 0.5])
     print(f'Mesh Info: {object_mesh}')
 
-    # loop subdivision from trimesh
+    # PART A) GROUND TRUTH - loop subdivision from trimesh
     # mesh_subdivided = trimesh.Trimesh(*trimesh.remesh.subdivide_loop(
     #     object_mesh.vertices,
     #     object_mesh.faces,
     #     1
     # ))
 
-    # implement your own loop subdivision here
-    # mesh_subdivided = subdivision_loop(object_mesh, iterations=1)
+    # PART A) implement your own loop subdivision here
+    mesh_subdivided = subdivision_loop(object_mesh, iterations=1)
 
     # print the new mesh information and save the mesh
     # print(f'Subdivided Mesh Info: {mesh_subdivided}')
-    # mesh_subdivided.export('assets/assignment1/cube_subdivided.obj')
+    mesh_subdivided.export('assets/assignment1/cube_subdivided.obj')
 
-    # quadratic error mesh decimation
+    # # PART B) GROUND TRUTH - quadratic error mesh decimation
     # mesh_decimated = object_mesh.simplify_quadric_decimation(4)
 
-    # implement your own quadratic error mesh decimation here
+    # PART B) implement your own quadratic error mesh decimation here
     mesh_decimated = simplify_quadratic_error(object_mesh, face_count=4)
 
     # print the new mesh information and save the mesh
