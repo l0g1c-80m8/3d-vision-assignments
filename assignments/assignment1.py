@@ -281,7 +281,7 @@ if __name__ == '__main__':
     mesh_subdivided = subdivision_loop(object_mesh, iterations=1)
 
     # print the new mesh information and save the mesh
-    # print(f'Subdivided Mesh Info: {mesh_subdivided}')
+    print(f'Subdivided Mesh Info: {mesh_subdivided}')
     mesh_subdivided.export('assets/assignment1/cube_subdivided.obj')
 
     # # PART B) GROUND TRUTH - quadratic error mesh decimation
