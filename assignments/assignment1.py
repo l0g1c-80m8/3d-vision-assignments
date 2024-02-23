@@ -144,7 +144,8 @@ def subdivision_loop(mesh, iterations=1):
     # You should also consider the boundary cases and more iterations in your submission
     """
 
-    # reference: https://www.cs.cmu.edu/afs/cs/academic/class/15462-s14/www/lec_slides/Subdivision.pdf
+    # reference 1: https://www.cs.cmu.edu/afs/cs/academic/class/15462-s14/www/lec_slides/Subdivision.pdf
+    # reference 2: https://www.dropbox.com/scl/fo/r8ktikl0qmuqs4cuk7f8x/h?dl=0&e=1&preview=Geometry_processing.pdf&rlkey=ym40kcihfcfydyxd4wat0806g
 
     if iterations < 1:
         return mesh
@@ -165,20 +166,23 @@ def subdivision_loop(mesh, iterations=1):
 
 # [START]: QUADRATIC ERROR DECIMATION IMPLEMENTATION
 def _get_vertex_quadrics(vertices, faces):
-    vertex_quadrics = defaultdict(lambda: np.zeros((4, 4)))
+    vertex_quadrics = defaultdict(lambda: np.zeros((4, 4)))  # mapping from vertex index to its quadrics matrix
 
     for face in faces:
+        # for the current triangle (face), find the quadrics matrix K
         v0, v1, v2 = vertices[face[0]], vertices[face[1]], vertices[face[2]]
         normal = np.cross(v1 - v0, v2 - v0)
         normal /= np.linalg.norm(normal)
         a, b, c = normal
         d = -np.dot(normal, v0)
 
+        # create the K (quadric) matrix (slide 68)
         plane_matrix = np.array([[a * a, a * b, a * c, a * d],
                                  [a * b, b * b, b * c, b * d],
                                  [a * c, b * c, c * c, c * d],
                                  [a * d, b * d, c * d, d * d]])
 
+        # accumulate K to all vertices of the current mesh
         vertex_quadrics[face[0]] += plane_matrix
         vertex_quadrics[face[1]] += plane_matrix
         vertex_quadrics[face[2]] += plane_matrix
@@ -187,10 +191,11 @@ def _get_vertex_quadrics(vertices, faces):
 
 
 def _get_edge_quadrics(faces, vertex_quadrics):
-    edge_quadrics = dict()
+    edge_quadrics = dict()  # mapping from an edge to the quadrics matrix
 
     for face in faces:
         for i in range(len(face)):
+            # for every edge in the mesh, combine the K matrices and edd entry
             edge = (i, (i + 1) % len(face))
             edge_quadrics[edge] = vertex_quadrics[edge[0]] + vertex_quadrics[edge[1]]
 
@@ -203,14 +208,17 @@ def _get_min_cost_edge(edge_quadrics):
     min_pt = (np.nan, np.nan)
 
     for edge, Kij in edge_quadrics.items():
+        # decompose K (slide 73)
         B = Kij[:3, :3]
         w = Kij[:3, 3]
         # d_sq = Kij[3, 3]
 
+        # find error and minimum point
         pt = -np.linalg.inv(B) @ w
         pt_4d = np.append(pt, 1)
         error = pt_4d.T @ Kij @ pt_4d
 
+        # update the minimum cost edge
         if error < min_error:
             min_error = error
             min_pt = pt
@@ -223,28 +231,29 @@ def _collapse_edge(vertices, faces, min_edge, min_pt):
     new_vertices = np.vstack((np.array(list(map(
         lambda v_idx: vertices[v_idx],
         filter(lambda v_idx: v_idx not in min_edge, range(len(vertices)))
-    ))), min_pt))
+    ))), min_pt))  # filter out vertices to be removed and add new vertex for the collapsed edge
     new_vertices_dict = dict(map(
         lambda v_idx: (tuple(v_idx[1]), v_idx[0]),
         enumerate(new_vertices)
-    ))
+    ))  # create a dictionary for fast lookups
 
+    # create new faces from the new and old vertices
     new_faces = np.array(list(map(
         lambda face: (
             new_vertices_dict[tuple(vertices[face[0]]) if face[0] != '*' else tuple(min_pt)],
             new_vertices_dict[tuple(vertices[face[1]]) if face[1] != '*' else tuple(min_pt)],
             new_vertices_dict[tuple(vertices[face[2]]) if face[2] != '*' else tuple(min_pt)],
-        ),
+        ),  # step 4. update the indices of the vertices with indices from the new vertex list and replace the * symbol
         map(
             lambda face: (
                 face[0] if face[0] not in min_edge else '*',
                 face[1] if face[1] not in min_edge else '*',
                 face[2] if face[2] not in min_edge else '*',
-            ),
+            ),  # step 3. if a vertex is in min edge replace it with a special symbol *
             filter(
                 lambda face: not (min_edge[0] in face and min_edge[1] in face),
-                map(tuple, faces)
-            )
+                map(tuple, faces)  # step 1. map face vectors in faces to a tuple (that can be used for lookup)
+            )  # step 2. filter out the faces that contain both vertices of the edge to be removed
         )
     )))
 
@@ -267,9 +276,12 @@ def simplify_quadratic_error(mesh, face_count=1):
         return mesh
 
     while faces.size // 3 > face_count:
+        # step 1: calculate quadric matrices for every vertex and edge
         vertex_quadrics = _get_vertex_quadrics(vertices, faces)
         edge_quadrics = _get_edge_quadrics(faces, vertex_quadrics)
+        # step 2: find the edge with the minimum cost (the least error) and get the corresponding new vertex
         min_edge, min_pt = _get_min_cost_edge(edge_quadrics)
+        # step 3: collapse the edge to the new vertex and recompute the vertices and faces
         vertices, faces = _collapse_edge(vertices, faces, min_edge, min_pt)
 
     return trimesh.Trimesh(vertices, faces)
