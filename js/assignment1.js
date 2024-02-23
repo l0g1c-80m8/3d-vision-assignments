@@ -4,7 +4,7 @@ import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 
-const render = (containerId, asset) => {
+const render = (containerId, asset, camera_z=0.7) => {
 	const container = document.getElementById(containerId);
 	container.style.position = 'relative';
 
@@ -56,7 +56,7 @@ const render = (containerId, asset) => {
 			}
 		);
 
-		camera.position.z = 0.7;
+		camera.position.z = camera_z;
 	}
 
 	function initSTATS() {
@@ -109,6 +109,9 @@ const render = (containerId, asset) => {
 	initSTATS();
 	animate();
 };
+
+// original mesh:
+render('container0', '../assets/cube.obj', 4);
 
 // loop subdivision:
 render('container1', '../assets/assignment1/cube_subdivided_iterations_1.obj');
