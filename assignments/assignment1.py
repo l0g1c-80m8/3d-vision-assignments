@@ -281,7 +281,7 @@ if __name__ == '__main__':
     #     1
     # ))
 
-    # PART A) implement your own loop subdivision here
+    # PART A) IMPLEMENTATION - implement your own loop subdivision here
     mesh_subdivided = subdivision_loop(object_mesh, iterations=1)
 
     # print the new mesh information and save the mesh
@@ -291,7 +291,7 @@ if __name__ == '__main__':
     # # PART B) GROUND TRUTH - quadratic error mesh decimation
     # mesh_decimated = object_mesh.simplify_quadric_decimation(4)
 
-    # PART B) implement your own quadratic error mesh decimation here
+    # PART B) IMPLEMENTATION - implement your own quadratic error mesh decimation here
     mesh_decimated = simplify_quadratic_error(object_mesh, face_count=4)
 
     # print the new mesh information and save the mesh
