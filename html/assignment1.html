@@ -50,9 +50,9 @@
 			Quadratic Error involves a three-step process:
 		</p>
 		<ol>
-			<li><strong>Quadric Matrix Calculation:</strong> Compute quadric matrices for each vertex and edge.</li>
+			<li><strong>Quadric Matrix Calculation:</strong> Compute quadric matrices for each vertex and use them to calculate the matrices for each edge.</li>
 			<li><strong>Cost Minimization:</strong> Identify the edge with the lowest cost (least error) and determine the corresponding new vertex.</li>
-			<li><strong>Edge Collapse and Recalculation:</strong> Collapse the identified edge to the new vertex and update the vertices and faces accordingly.</li>
+			<li><strong>Edge Collapse and Recalculation:</strong> Collapse the identified edge to the new vertex and update the vertices and faces accordingly. Also update the values of the quadric matrix.</li>
 		</ol>
 		<p>
 			Please refer to the code comments for more details about the implementation of the individual steps.
