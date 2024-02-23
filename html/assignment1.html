@@ -28,36 +28,44 @@
 			<b>How to Submit: </b>Please submit this template file along with your implementation as a zip file. The zip file should contain your source code, the generated results in OBJ mesh format, and a report that has been modified using this HTML file. The report should comprise your results and a concise explanation of your implementation. Alternatively, you may choose to create a GitHub repository containing all these elements and provide a link for submission.
 			<br><br>
 			<b>Grading: </b>The grading is based on the correctness of your implementation. You are encouraged to use the visualization tool to debug your implementation. You can also use the visualization tool to test your implementation on other 3D models. You can find an example of 3D model in the "./assets" folder.
-		<h2>Loop Subdivision</h2>
-		<h3>Method Overview:</h3>
-		<p>
-			The Loop subdivision algorithm consists of the following steps:
-		</p>
-		<ol>
-			<li><strong>Get Vertices and Faces:</strong> Extract vertices and faces from the mesh.</li>
-			<li><strong>Generate Odd Vertices:</strong> Calculate odd vertices from the edges using the formula from the slides handling the general and boundary cases.</li>
-			<li><strong>Generate Even Vertices:</strong> Compute even vertices from the original vertices using the formula from the slides handling the general and boundary cases..</li>
-			<li><strong>Create New Mesh:</strong> Compose a new mesh using the calculated odd and even vertices and new faces created from the new vertices.</li>
-		</ol>
-		<p>
-			Please refer to the code comments for more details about the implementation of the individual steps.
-		</p>
+		<div>
+			<h2>Loop Subdivision</h2>
+			<h3>Method Overview:</h3>
+			<p>
+				The Loop subdivision algorithm consists of the following steps:
+			</p>
+			<ol>
+				<li><strong>Get Vertices and Faces:</strong> Extract vertices and faces from the mesh.</li>
+				<li><strong>Generate Odd Vertices:</strong> Calculate odd vertices from the edges using the formula from the slides handling the general and boundary cases.</li>
+				<li><strong>Generate Even Vertices:</strong> Compute even vertices from the original vertices using the formula from the slides handling the general and boundary cases..</li>
+				<li><strong>Create New Mesh:</strong> Compose a new mesh using the calculated odd and even vertices and new faces created from the new vertices.</li>
+			</ol>
+			<p>
+				Please refer to the code comments for more details about the implementation of the individual steps.
+			</p>
+			<div id="container1"></div>
+			<div id="container2"></div>
+			<div id="container3"></div>
+		</div>
+		<div>
+			<h2>Quadric Error Mesh Decimation</h2>
+			<h3>Method Overview:</h3>
+			<p>
+				Quadratic Error involves a three-step process:
+			</p>
+			<ol>
+				<li><strong>Quadric Matrix Calculation:</strong> Compute quadric matrices for each vertex and use them to calculate the matrices for each edge.</li>
+				<li><strong>Cost Minimization:</strong> Identify the edge with the lowest cost (least error) and determine the corresponding new vertex.</li>
+				<li><strong>Edge Collapse and Recalculation:</strong> Collapse the identified edge to the new vertex and update the vertices and faces accordingly. Also update the values of the quadric matrix.</li>
+			</ol>
+			<p>
+				Please refer to the code comments for more details about the implementation of the individual steps.
+			</p>
+			<div id="container4"></div>
+			<div id="container5"></div>
+			<div id="container6"></div>
+		</div>
 
-        <div id="container1"></div>
-		<h2>Quadric Error Mesh Decimation</h2>
-		<h3>Method Overview:</h3>
-		<p>
-			Quadratic Error involves a three-step process:
-		</p>
-		<ol>
-			<li><strong>Quadric Matrix Calculation:</strong> Compute quadric matrices for each vertex and use them to calculate the matrices for each edge.</li>
-			<li><strong>Cost Minimization:</strong> Identify the edge with the lowest cost (least error) and determine the corresponding new vertex.</li>
-			<li><strong>Edge Collapse and Recalculation:</strong> Collapse the identified edge to the new vertex and update the vertices and faces accordingly. Also update the values of the quadric matrix.</li>
-		</ol>
-		<p>
-			Please refer to the code comments for more details about the implementation of the individual steps.
-		</p>
-        <div id="container2"></div>
 		<script type="module" src="../js/assignment1.js"></script>
 	</body>
 </html>
