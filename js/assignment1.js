@@ -56,7 +56,7 @@ const render = (containerId, asset) => {
 			}
 		);
 
-		camera.position.z = 0.9;
+		camera.position.z = 0.7;
 	}
 
 	function initSTATS() {
