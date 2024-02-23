@@ -1,5 +1,7 @@
 import trimesh
 import numpy as np
+
+from collections import defaultdict
 from functools import reduce
 
 
@@ -155,6 +157,93 @@ def subdivision_loop(mesh, iterations=1):
     return mesh
 
 
+def _get_vertex_quadrics(vertices, faces):
+    vertex_quadrics = defaultdict(lambda: np.zeros((4, 4)))
+
+    for face in faces:
+        v0, v1, v2 = vertices[face[0]], vertices[face[1]], vertices[face[2]]
+        normal = np.cross(v1 - v0, v2 - v0)
+        normal /= np.linalg.norm(normal)
+        a, b, c = normal
+        d = -np.dot(normal, v0)
+
+        plane_matrix = np.array([[a * a, a * b, a * c, a * d],
+                                 [a * b, b * b, b * c, b * d],
+                                 [a * c, b * c, c * c, c * d],
+                                 [a * d, b * d, c * d, d * d]])
+
+        vertex_quadrics[face[0]] += plane_matrix
+        vertex_quadrics[face[1]] += plane_matrix
+        vertex_quadrics[face[2]] += plane_matrix
+
+    return vertex_quadrics
+
+
+def _get_edge_quadrics(faces, vertex_quadrics):
+    edge_quadrics = dict()
+
+    for face in faces:
+        for i in range(len(face)):
+            edge = (i, (i + 1) % len(face))
+            edge_quadrics[edge] = vertex_quadrics[edge[0]] + vertex_quadrics[edge[1]]
+
+    return edge_quadrics
+
+
+def _get_min_cost_edge(edge_quadrics):
+    min_error = float('inf')  # AKA cost
+    min_edge = (-1, -1)
+    min_pt = (np.nan, np.nan)
+
+    for edge, Kij in edge_quadrics.items():
+        B = Kij[:3, :3]
+        w = Kij[:3, 3]
+        # d_sq = Kij[3, 3]
+
+        pt = -np.linalg.inv(B) @ w
+        pt_4d = np.append(pt, 1)
+        error = pt_4d.T @ Kij @ pt_4d
+
+        if error < min_error:
+            min_error = error
+            min_pt = pt
+            min_edge = edge
+
+    return min_edge, min_pt
+
+
+def _collapse_edge(vertices, faces, min_edge, min_pt):
+    new_vertices = np.vstack((np.array(list(map(
+        lambda v_idx: vertices[v_idx],
+        filter(lambda v_idx: v_idx not in min_edge, range(len(vertices)))
+    ))), min_pt))
+    new_vertices_dict = dict(map(
+        lambda v_idx: (tuple(v_idx[1]), v_idx[0]),
+        enumerate(new_vertices)
+    ))
+
+    new_faces = np.array(list(map(
+        lambda face: (
+            new_vertices_dict[tuple(vertices[face[0]]) if face[0] != '*' else tuple(min_pt)],
+            new_vertices_dict[tuple(vertices[face[1]]) if face[1] != '*' else tuple(min_pt)],
+            new_vertices_dict[tuple(vertices[face[2]]) if face[2] != '*' else tuple(min_pt)],
+        ),
+        map(
+            lambda face: (
+                face[0] if face[0] not in min_edge else '*',
+                face[1] if face[1] not in min_edge else '*',
+                face[2] if face[2] not in min_edge else '*',
+            ),
+            filter(
+                lambda face: not (min_edge[0] in face and min_edge[1] in face),
+                map(tuple, faces)
+            )
+        )
+    )))
+
+    return new_vertices, new_faces
+
+
 def simplify_quadratic_error(mesh, face_count=1):
     """
     Apply quadratic error mesh decimation to the input mesh until the target face count is reached.
@@ -162,7 +251,21 @@ def simplify_quadratic_error(mesh, face_count=1):
     :param face_count: number of faces desired in the resulting mesh.
     :return: mesh after decimation
     """
-    return mesh
+
+    # reference: slide 67 to 74
+    # https://www.dropbox.com/scl/fo/r8ktikl0qmuqs4cuk7f8x/h?dl=0&e=1&preview=Geometry_processing.pdf&rlkey=ym40kcihfcfydyxd4wat0806g
+
+    vertices, faces = mesh.vertices, mesh.faces
+    if face_count >= mesh.faces.size // 3:
+        return mesh
+
+    while faces.size // 3 > face_count:
+        vertex_quadrics = _get_vertex_quadrics(vertices, faces)
+        edge_quadrics = _get_edge_quadrics(faces, vertex_quadrics)
+        min_edge, min_pt = _get_min_cost_edge(edge_quadrics)
+        vertices, faces = _collapse_edge(vertices, faces, min_edge, min_pt)
+
+    return trimesh.Trimesh(vertices, faces)
 
 
 if __name__ == '__main__':
@@ -179,17 +282,17 @@ if __name__ == '__main__':
     # ))
 
     # implement your own loop subdivision here
-    mesh_subdivided = subdivision_loop(object_mesh, iterations=1)
+    # mesh_subdivided = subdivision_loop(object_mesh, iterations=1)
 
     # print the new mesh information and save the mesh
-    print(f'Subdivided Mesh Info: {mesh_subdivided}')
-    mesh_subdivided.export('assets/assignment1/cube_subdivided.obj')
+    # print(f'Subdivided Mesh Info: {mesh_subdivided}')
+    # mesh_subdivided.export('assets/assignment1/cube_subdivided.obj')
 
     # quadratic error mesh decimation
     # mesh_decimated = object_mesh.simplify_quadric_decimation(4)
 
     # implement your own quadratic error mesh decimation here
-    mesh_decimated = simplify_quadratic_error(object_mesh, face_count=1)
+    mesh_decimated = simplify_quadratic_error(object_mesh, face_count=4)
 
     # print the new mesh information and save the mesh
     print(f'Decimated Mesh Info: {mesh_decimated}')
