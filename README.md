@@ -1,6 +1,8 @@
 # CSCI 599: 3D Vision
 Assignments for the course CSCI 599: 3D Vision 
 
+#### Repo template [here](https://github.com/jingyangcarl/CSCI599)
+
 ## Table of Contents
 - [How to use](#how-to-use)
 - [Assignment 1: Geometry Processing](#assignment-1-geometry-processing)
