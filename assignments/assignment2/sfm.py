@@ -387,9 +387,14 @@ class SFM(object):
             return pts3d, pts2d, len(kp)
 
         pts3d, pts2d, ref_len = find_2D3D_matches()
-        _, R, t, _ = cv2.solvePnPRansac(pts3d[:, np.newaxis], pts2d[:, np.newaxis], self.K, None,
-                                        confidence=self.opts.pnp_prob, flags=getattr(cv2, self.opts.pnp_method),
-                                        reprojectionError=self.opts.reprojection_thres)
+        _, R, t, _ = cv2.solvePnPRansac(
+            pts3d[:, np.newaxis],
+            pts2d[:, np.newaxis],
+            self.K, None,
+            confidence=self.opts.pnp_prob,
+            flags=getattr(cv2, self.opts.pnp_method),
+            reprojectionError=self.opts.reprojection_thres
+        )
         R, _ = cv2.Rodrigues(R)
         self.image_data[name] = [R, t, np.ones((ref_len,)) * -1]
 
