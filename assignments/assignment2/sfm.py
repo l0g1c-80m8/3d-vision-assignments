@@ -444,7 +444,7 @@ class SFM(object):
                 pt = self.point_cloud[int(ref[idx])]
                 projected_pt, _ = cv2.projectPoints(pt, R, t, self.K, None)
                 err += np.linalg.norm(kp_idx.pt - projected_pt[0])
-                reproj_pts.append(projected_pt)
+                reproj_pts.append(projected_pt[0])
                 img_pts.append(kp_idx.pt)
 
         err /= len(kp)
