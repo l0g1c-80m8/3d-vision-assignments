@@ -110,6 +110,21 @@ def draw_correspondences(img, ptsTrue, ptsReproj, ax, drawOnly=50):
     """
     ax.imshow(img)
 
-    # TODO: draw correspondence between ptsTrue and ptsReproj
+    # draw correspondence between ptsTrue and ptsReproj
+
+    sample_indices = np.random.choice(len(ptsTrue), min(drawOnly, len(ptsTrue)), replace=False)
+
+    for sample_idx in sample_indices:
+        pt_true = ptsTrue[sample_idx]
+        pt_reproj = ptsReproj[sample_idx]
+
+        print(pt_true, pt_reproj)
+
+        # Plot ground truth point
+        ax.plot(pt_true[0], pt_true[1], 'bo', markersize=5)
+
+        # Plot reprojected point
+        ax.plot(pt_reproj[0], pt_reproj[1], 'rx', markersize=5)
+        ax.plot([pt_true[0], pt_reproj[0]], [pt_true[1], pt_reproj[1]], 'g-', linewidth=1)
 
     return ax
