@@ -118,8 +118,6 @@ def draw_correspondences(img, ptsTrue, ptsReproj, ax, drawOnly=50):
         print(sample_idx, len(ptsTrue), len(ptsReproj))
         pt_true = ptsTrue[0, sample_idx]
         pt_reproj = ptsReproj[sample_idx, 0, 0]
-        print(pt_true, pt_reproj)
-        input('check')
 
         # Plot ground truth point
         ax.plot(pt_true[0], pt_true[1], 'bo', markersize=5)
