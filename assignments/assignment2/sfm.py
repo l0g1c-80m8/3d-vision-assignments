@@ -328,7 +328,8 @@ class SFM(object):
                 matches = [match for match in matches if prev_name_ref[match.queryIdx] < 0]
 
                 if len(matches) > 0:
-                    # TODO: Process the new view
+                    self.baseline_pose_estimation(prev_name, name)
+                    self.triangulate_two_views(prev_name, name)
                     pass
                 else:
                     print('skipping {} and {}'.format(prev_name, name))
