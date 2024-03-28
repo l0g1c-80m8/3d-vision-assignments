@@ -449,7 +449,7 @@ class SFM(object):
 
         err /= len(kp)
         reproj_pts = np.array(reproj_pts)
-        img_pts = np.array([kp])
+        img_pts = np.array([img_pts])
 
         # PLOT here
         if self.opts.plot_error:
