@@ -451,7 +451,7 @@ class SFM(object):
             reproj_pts = np.array(reproj_pts)
             img_pts = np.array([kp])
 
-        # TODO: PLOT here
+        # PLOT here
         if self.opts.plot_error:
             fig, ax = plt.subplots()
             image = cv2.imread(os.path.join(self.images_dir, name + '.jpg'))[:, :, ::-1]
