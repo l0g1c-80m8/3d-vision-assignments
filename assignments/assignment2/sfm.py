@@ -445,7 +445,7 @@ class SFM(object):
                 projected_pt, _ = cv2.projectPoints(pt, R, t, self.K, None)
                 err += np.linalg.norm(kp_idx.pt - projected_pt[0])
                 reproj_pts.append(projected_pt)
-                img_pts.append(pt)
+                img_pts.append(kp_idx.pt)
 
         err /= len(kp)
         reproj_pts = np.array(reproj_pts)
