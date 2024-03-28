@@ -437,6 +437,7 @@ class SFM(object):
         kp, desc = self.load_features(name)
         err = 0
         reproj_pts = []
+        img_pts = []
 
         for idx, kp_idx in enumerate(kp):
             if ref[idx] >= 0:
@@ -444,9 +445,11 @@ class SFM(object):
                 projected_pt, _ = cv2.projectPoints(pt, R, t, self.K, None)
                 err += np.linalg.norm(kp_idx.pt - projected_pt[0])
                 reproj_pts.append(projected_pt)
+                img_pts.append(pt)
 
             err /= len(kp)
             reproj_pts = np.array(reproj_pts)
+            img_pts = np.array([kp])
 
         # TODO: PLOT here
         if self.opts.plot_error:
