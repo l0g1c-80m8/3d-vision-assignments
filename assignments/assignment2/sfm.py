@@ -438,10 +438,8 @@ class SFM(object):
 
         for idx, kp_idx in enumerate(kp):
             if ref[idx] >= 0:
-                print(ref[idx])
                 pt = self.point_cloud[int(ref[idx])]
                 projected_pt, _ = cv2.projectPoints(pt, R, t, self.K, None)
-                input('check')
                 err += np.linalg.norm(kp_idx.pt - projected_pt[0])
 
             err /= len(kp)
