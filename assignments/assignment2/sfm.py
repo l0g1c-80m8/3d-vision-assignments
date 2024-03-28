@@ -431,7 +431,7 @@ class SFM(object):
         - err (float): The average reprojection error.
         """
 
-        # TODO: Reprojection error calculation
+        # Reprojection error calculation
         R, t, ref = self.image_data[name]
         kp, desc = self.load_features(name)
         err = 0
