@@ -115,10 +115,11 @@ def draw_correspondences(img, ptsTrue, ptsReproj, ax, drawOnly=50):
     sample_indices = np.random.choice(len(ptsTrue), min(drawOnly, len(ptsTrue)), replace=False)
 
     for sample_idx in sample_indices:
-        pt_true = ptsTrue[sample_idx]
-        pt_reproj = ptsReproj[sample_idx]
-
+        print(sample_idx, len(ptsTrue), len(ptsReproj))
+        pt_true = ptsTrue[0, sample_idx]
+        pt_reproj = ptsReproj[sample_idx, 0, 0]
         print(pt_true, pt_reproj)
+        input('check')
 
         # Plot ground truth point
         ax.plot(pt_true[0], pt_true[1], 'bo', markersize=5)
