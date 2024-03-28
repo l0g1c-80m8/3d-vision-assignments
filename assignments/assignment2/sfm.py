@@ -308,7 +308,7 @@ class SFM(object):
         self.image_data[name1][-1] = ref1
         self.image_data[name2][-1] = ref2
 
-    def trangulate_new_view(self, name):
+    def triangulate_new_view(self, name):
         """
         Triangulates new view based on matches with previous views.
 
@@ -510,7 +510,7 @@ class SFM(object):
             print('Camera {0}: Pose Estimation [time={1:.3}s]'.format(new_name, this_time))
 
             # triangulation for new registered camera
-            self.trangulate_new_view(new_name)
+            self.triangulate_new_view(new_name)
             t1 = time()
             this_time = t1 - t2
             total_time += this_time
