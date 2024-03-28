@@ -447,9 +447,9 @@ class SFM(object):
                 reproj_pts.append(projected_pt)
                 img_pts.append(pt)
 
-            err /= len(kp)
-            reproj_pts = np.array(reproj_pts)
-            img_pts = np.array([kp])
+        err /= len(kp)
+        reproj_pts = np.array(reproj_pts)
+        img_pts = np.array([kp])
 
         # PLOT here
         if self.opts.plot_error:
