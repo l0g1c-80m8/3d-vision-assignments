@@ -436,23 +436,23 @@ class SFM(object):
         R, t, ref = self.image_data[name]
         kp, desc = self.load_features(name)
         err = 0
-        reprojected_pts = []
+        reproj_pts = []
 
         for idx, kp_idx in enumerate(kp):
             if ref[idx] >= 0:
                 pt = self.point_cloud[int(ref[idx])]
                 projected_pt, _ = cv2.projectPoints(pt, R, t, self.K, None)
                 err += np.linalg.norm(kp_idx.pt - projected_pt[0])
-                reprojected_pts.append(projected_pt)
+                reproj_pts.append(projected_pt)
 
             err /= len(kp)
-            reprojected_pts = np.array(reprojected_pts)
+            reproj_pts = np.array(reproj_pts)
 
         # TODO: PLOT here
         if self.opts.plot_error:
             fig, ax = plt.subplots()
             image = cv2.imread(os.path.join(self.images_dir, name + '.jpg'))[:, :, ::-1]
-            # ax = draw_correspondences(image, img_pts, reproj_pts, ax)
+            ax = draw_correspondences(image, img_pts, reproj_pts, ax)
             ax.set_title('reprojection error = {}'.format(err))
             fig.savefig(os.path.join(self.out_err_dir, '{}.png'.format(name)))
             plt.close(fig)
