@@ -119,10 +119,7 @@ def draw_correspondences(img, ptsTrue, ptsReproj, ax, drawOnly=50):
         pt_true = ptsTrue[0, sample_idx]
         pt_reproj = ptsReproj[sample_idx, 0, 0]
 
-        # Plot ground truth point
         ax.plot(pt_true[0], pt_true[1], 'bo', markersize=5)
-
-        # Plot reprojected point
         ax.plot(pt_reproj[0], pt_reproj[1], 'rx', markersize=5)
         ax.plot([pt_true[0], pt_reproj[0]], [pt_true[1], pt_reproj[1]], 'g-', linewidth=1)
 
